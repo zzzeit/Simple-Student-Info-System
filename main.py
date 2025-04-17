@@ -2,157 +2,52 @@ import csv
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
-
-college_programs = {
-    "COET": [
-        "DIPLOMA IN CHEMICAL ENGINEERING TECHNOLOGY",
-        "BS IN CIVIL ENGINEERING",
-        "BS IN CERAMICS ENGINEERING",
-        "BS IN CHEMICAL ENGINEERING",
-        "BS IN COMPUTER ENGINEERING",
-        "BS IN ELECTRONICS & COMMUNICATIONS ENGINEERING",
-        "BS IN ELECTRICAL ENGINEERING",
-        "BS IN MINING ENG'G.",
-        "BS IN ENVIRONMENTAL ENGINEERING TECHNOLOGY",
-        "BS IN MECHANICAL ENGINEERING",
-        "BS IN METALLURGICAL ENGINEERING"
-    ],
-    "CSM": [
-        "BS IN BIOLOGY (BOTANY)",
-        "BS IN CHEMISTRY",
-        "BS IN MATHEMATICS",
-        "BS IN PHYSICS",
-        "BS IN BIOLOGY (ZOOLOGY)",
-        "BS IN BIOLOGY (MARINE)",
-        "BS IN BIOLOGY (GENERAL)",
-        "BS IN STATISTICS"
-    ],
-    "CCS": [
-        "DIPLOMA IN ELECTRONICS ENGINEERING TECH (Computer Electronics)",
-        "BS IN INFORMATION SYSTEMS",
-        "BS IN INFORMATION TECHNOLOGY",
-        "DIPLOMA IN ELECTRONICS TECHNOLOGY",
-        "DIPLOMA IN ELECTRONICS ENGINEERING TECH (Communication Electronics)",
-        "BS IN COMPUTER SCIENCE",
-        "BS IN ELECTRONICS AND COMPUTER TECHNOLOGY (EMBEDDED SYSTEMS)",
-        "BS IN ELECTRONICS AND COMPUTER TECHNOLOGY (COMMUNICATIONS SYSTEM)"
-    ],
-    "CED": [
-        "BACHELOR OF SECONDARY EDUCATION (BIOLOGY)",
-        "BS IN INDUSTRIAL EDUCATION (DRAFTING)",
-        "BACHELOR OF SECONDARY EDUCATION (CHEMISTRY)",
-        "BACHELOR OF SECONDARY EDUCATION (PHYSICS)",
-        "BACHELOR OF SECONDARY EDUCATION (MATHEMATICS)",
-        "BACHELOR OF SECONDARY EDUCATION (MAPEH)",
-        "Certificate Program for Teachers",
-        "BACHELOR OF SECONDARY EDUCATION (TLE)",
-        "BACHELOR OF SECONDARY EDUCATION (GENERAL SCIENCE)",
-        "BACHELOR OF ELEMENTARY EDUCATION (ENGLISH)",
-        "BACHELOR OF ELEMENTARY EDUCATION (SCIENCE AND HEALTH)",
-        "BS IN TECHNOLOGY TEACHER EDUCATION (INDUSTRIAL TECH)",
-        "BS IN TECHNOLOGY TEACHER EDUCATION (DRAFTING TECH)"
-    ],
-    "CASS": [
-        "GENERAL EDUCATION PROGRAM",
-        "BA IN ENGLISH",
-        "BS IN PSYCHOLOGY",
-        "BA IN FILIPINO",
-        "BA IN HISTORY",
-        "BA IN POLITICAL SCIENCE"
-    ],
-    "CBAA": [
-        "BS IN BUSINESS ADMINISTRATION (BUSINESS ECONOMICS)",
-        "BS IN BUSINESS ADMINISTRATION (ECONOMICS)",
-        "BS IN BUSINESS ADMINISTRATION (ENTREPRENEURIAL MARKETING)",
-        "BS IN HOTEL AND RESTAURANT MANAGEMENT",
-        "BS IN ACCOUNTANCY"
-    ],
-    "CHS": [
-        "BS IN NURSING"
-    ]
-}
-college_mapping = {
-    "College of Engineering and Technology": "COET",
-    "College of Science and Mathematics": "CSM",
-    "College of Computer Studies": "CCS",
-    "College of Education": "CED",
-    "College of Arts and Science": "CASS",
-    "College of Business Administration & Accountancy": "CBAA",
-    "College of Nursing": "CHS"
-}
-
-program_codes = {
-    "DIPLOMA IN CHEMICAL ENGINEERING TECHNOLOGY": "DCET",
-    "BS IN CIVIL ENGINEERING": "BSCE",
-    "BS IN CERAMICS ENGINEERING": "BSCR",
-    "BS IN CHEMICAL ENGINEERING": "BSChE",
-    "BS IN COMPUTER ENGINEERING": "BSCpE",
-    "BS IN ELECTRONICS & COMMUNICATIONS ENGINEERING": "BSECE",
-    "BS IN ELECTRICAL ENGINEERING": "BSEE",
-    "BS IN MINING ENG'G.": "BSME",
-    "BS IN ENVIRONMENTAL ENGINEERING TECHNOLOGY": "BSEET",
-    "BS IN MECHANICAL ENGINEERING": "BSME",
-    "BS IN METALLURGICAL ENGINEERING": "BSMetE",
-    "BS IN BIOLOGY (BOTANY)": "BSB",
-    "BS IN CHEMISTRY": "BSC",
-    "BS IN MATHEMATICS": "BSM",
-    "BS IN PHYSICS": "BSP",
-    "BS IN BIOLOGY (ZOOLOGY)": "BSBZ",
-    "BS IN BIOLOGY (MARINE)": "BSBM",
-    "BS IN BIOLOGY (GENERAL)": "BSBG",
-    "BS IN STATISTICS": "BSS",
-    "DIPLOMA IN ELECTRONICS ENGINEERING TECH (Computer Electronics)": "DEETCE",
-    "BS IN INFORMATION SYSTEMS": "BSIS",
-    "BS IN INFORMATION TECHNOLOGY": "BSIT",
-    "DIPLOMA IN ELECTRONICS TECHNOLOGY": "DET",
-    "DIPLOMA IN ELECTRONICS ENGINEERING TECH (Communication Electronics)": "DEETCE",
-    "BS IN COMPUTER SCIENCE": "BSCS",
-    "BS IN ELECTRONICS AND COMPUTER TECHNOLOGY (EMBEDDED SYSTEMS)": "BSECTES",
-    "BS IN ELECTRONICS AND COMPUTER TECHNOLOGY (COMMUNICATIONS SYSTEM)": "BSECTCS",
-    "BACHELOR OF SECONDARY EDUCATION (BIOLOGY)": "BSEB",
-    "BS IN INDUSTRIAL EDUCATION (DRAFTING)": "BSIED",
-    "BACHELOR OF SECONDARY EDUCATION (CHEMISTRY)": "BSEC",
-    "BACHELOR OF SECONDARY EDUCATION (PHYSICS)": "BSEP",
-    "BACHELOR OF SECONDARY EDUCATION (MATHEMATICS)": "BSEM",
-    "BACHELOR OF SECONDARY EDUCATION (MAPEH)": "BSEM",
-    "Certificate Program for Teachers": "CPT",
-    "BACHELOR OF SECONDARY EDUCATION (TLE)": "BSET",
-    "BACHELOR OF SECONDARY EDUCATION (GENERAL SCIENCE)": "BSEGS",
-    "BACHELOR OF ELEMENTARY EDUCATION (ENGLISH)": "BEEE",
-    "BACHELOR OF ELEMENTARY EDUCATION (SCIENCE AND HEALTH)": "BEESH",
-    "BS IN TECHNOLOGY TEACHER EDUCATION (INDUSTRIAL TECH)": "BSTTEIT",
-    "BS IN TECHNOLOGY TEACHER EDUCATION (DRAFTING TECH)": "BSTTEDT",
-    "GENERAL EDUCATION PROGRAM": "GEP",
-    "BA IN ENGLISH": "BAE",
-    "BS IN PSYCHOLOGY": "BSP",
-    "BA IN FILIPINO": "BAF",
-    "BA IN HISTORY": "BAH",
-    "BA IN POLITICAL SCIENCE": "BAPS",
-    "BS IN BUSINESS ADMINISTRATION (BUSINESS ECONOMICS)": "BSBABE",
-    "BS IN BUSINESS ADMINISTRATION (ECONOMICS)": "BSBAE",
-    "BS IN BUSINESS ADMINISTRATION (ENTREPRENEURIAL MARKETING)": "BSBAEM",
-    "BS IN HOTEL AND RESTAURANT MANAGEMENT": "BSHRM",
-    "BS IN ACCOUNTANCY": "BSA",
-    "BS IN NURSING": "BSN"
-}
-import csv
-from tkinter import *
-from tkinter import ttk
-from tkinter import messagebox
 import re
+
+# Load college programs from CSV
+def load_college_programs():
+    programs = {}
+    try:
+        with open('college_programs.csv', mode='r') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                college_code = row[0]
+                program_list = row[1:]
+                programs[college_code] = program_list
+    except FileNotFoundError:
+        messagebox.showerror("File Error", "college_programs.csv not found!")
+    return programs
+
+# Load college mapping from CSV
+def load_college_mapping():
+    mapping = {}
+    try:
+        with open('college_mapping.csv', mode='r') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                college_name = row[0]
+                college_code = row[1]
+                mapping[college_name] = college_code
+    except FileNotFoundError:
+        messagebox.showerror("File Error", "college_mapping.csv not found!")
+    return mapping
+
+# Load data from CSV files
+college_programs = load_college_programs()
+college_mapping = load_college_mapping()
 
 def autofill_code(event):
     selected_college = CollName_entry.get()
     if selected_college in college_mapping:
         CollCode_entry.delete(0, END)
         CollCode_entry.insert(0, college_mapping[selected_college])
-        program_combobox['values'] = college_programs[college_mapping[selected_college]]
+        program_combobox['values'] = college_programs.get(college_mapping[selected_college], [])
 
 def autofill_program_code(event):
     selected_program = program_combobox.get()
-    if selected_program in program_codes:
+    if selected_program:
         ProgCode_entry.delete(0, END)
-        ProgCode_entry.insert(0, program_codes[selected_program])
+        ProgCode_entry.insert(0, selected_program)
 
 def save_to_csv():
     idnum = idnum_var.get()
@@ -182,6 +77,59 @@ def save_to_csv():
     year_var.set("")
     collname_var.set("")
     collcode_var.set("")
+
+def open_delete_college_window():
+    # Create a new window
+    delete_college_window = Toplevel(root)
+    delete_college_window.title("Delete College")
+    delete_college_window.geometry("400x300")
+
+    # Label and Combobox for selecting a college
+    Label(delete_college_window, text="Select College to Delete:", font=("Arial", 12)).pack(pady=10)
+    college_combobox = ttk.Combobox(delete_college_window, values=list(college_mapping.keys()), state="readonly", font=("Arial", 10))
+    college_combobox.pack(pady=10)
+
+    # Function to delete the selected college
+    def delete_college():
+        selected_college = college_combobox.get()
+        if not selected_college:
+            messagebox.showwarning("Selection Error", "No college selected!")
+            return
+
+        # Get the college code for the selected college
+        college_code = college_mapping.get(selected_college)
+
+        # Remove the college from the mapping
+        del college_mapping[selected_college]
+
+        # Remove the programs associated with the college
+        if college_code in college_programs:
+            del college_programs[college_code]
+
+        # Remove students associated with the college
+        with open('students.csv', 'r', newline='') as file:
+            rows = list(csv.reader(file))
+
+        with open('students.csv', 'w', newline='') as file:
+            writer = csv.writer(file)
+            for row in rows:
+                if row[7] != college_code:  # College Code is in the 8th column (index 7)
+                    writer.writerow(row)
+
+        # Reload the Treeview with updated student data
+        student_info.delete(*student_info.get_children())
+        load_from_csv()
+
+        # Update the college dropdowns
+        CollName_entry['values'] = list(college_mapping.keys())
+
+        # Show success message and close the window
+        messagebox.showinfo("Success", f"College '{selected_college}' and its associated data have been deleted.")
+        delete_college_window.destroy()
+
+    # Add a delete button
+    delete_button = ttk.Button(delete_college_window, text="Delete College", command=delete_college, style="TButton")
+    delete_button.pack(pady=20)
 
 def load_from_csv():
     try:
@@ -229,12 +177,13 @@ def update_search_suggestions(event):
             student_info.reattach(item, '', 'end')
             student_info.selection_set(item)
             student_info.see(item)
-
 def sort_by_column(column):
-    data = [(student_info.set(child, column).strip().lower(), child) for child in student_info.get_children('')]
+    column_index = student_info["columns"].index(column)
+    data = [(student_info.item(child, 'values')[column_index].strip().lower(), child) for child in student_info.get_children('')]
     data.sort()
 
     for index, (value, child) in enumerate(data):
+        student_info.move(child, '', index)
         student_info.move(child, '', index)
 
 def validate_idnum(new_value):
@@ -344,6 +293,10 @@ Search_frame.pack(side=TOP, fill=X)
 search_entry = Entry(Search_frame, textvariable=search_var, font=("Arial", 10))
 search_entry.grid(row=0, column=0, padx=20)
 search_entry.bind('<KeyRelease>', update_search_suggestions)
+
+# Add a button to open the "Delete College" window
+button_delete_college = ttk.Button(Search_frame, text="Delete College", command=lambda: open_delete_college_window(), style="TButton")
+button_delete_college.grid(row=0, column=5, padx=10)
 
 button_delete = ttk.Button(Search_frame, text="Delete", command=delete_selected, style="TButton")
 button_delete.grid(row=0, column=1)
