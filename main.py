@@ -1,4 +1,3 @@
-import csv
 import sqlite3 as sql
 from tkinter import *
 from tkinter import ttk
