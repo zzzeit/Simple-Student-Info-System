@@ -1,35 +1,70 @@
 import csv
+import sqlite3 as sql
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 import re
 
+
+connect = sql.connect('students.db')
+cursor = connect.cursor()
+
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS students (
+        idnum TEXT PRIMARY KEY,
+        fname TEXT,
+        lname TEXT,
+        sex TEXT,
+        pcode TEXT,
+        yrlvl INTEGER,
+        cname TEXT,
+        ccode TEXT
+    )
+''')
+
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS cmap (
+        cname TEXT,
+        ccode TEXT
+    )
+''')
+
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS cprog (
+        ccode TEXT,
+        pcodes TEXT
+    )
+''')
+with open('college_programs.csv', mode='r', newline='', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        next(reader)  # Skip the header row if it exists
+        for row in reader:
+            ccode = row[0]
+            pcodes = row[1:]
+            pcodes = ",".join(pcodes)
+            cursor.execute("INSERT INTO cprog (ccode, pcodes) VALUES (?, ?)", (ccode, pcodes))
+connect.commit()
+
 # Load college programs from CSV
 def load_college_programs():
     programs = {}
-    try:
-        with open('college_programs.csv', mode='r') as file:
-            reader = csv.reader(file)
-            for row in reader:
-                college_code = row[0]
-                program_list = row[1:]
-                programs[college_code] = program_list
-    except FileNotFoundError:
-        messagebox.showerror("File Error", "college_programs.csv not found!")
+    cursor.execute("SELECT * FROM cprog")
+    rows = cursor.fetchall()
+    for row in rows:
+        college_code = row[0]
+        program_list = row[1].split(",")
+        programs[college_code] = program_list
     return programs
 
 # Load college mapping from CSV
 def load_college_mapping():
     mapping = {}
-    try:
-        with open('college_mapping.csv', mode='r') as file:
-            reader = csv.reader(file)
-            for row in reader:
-                college_name = row[0]
-                college_code = row[1]
-                mapping[college_name] = college_code
-    except FileNotFoundError:
-        messagebox.showerror("File Error", "college_mapping.csv not found!")
+    cursor.execute("SELECT * FROM cmap")
+    rows = cursor.fetchall()
+    for row in rows:
+        college_name = row[0]
+        college_code = row[1]
+        mapping[college_name] = college_code
     return mapping
 
 # Load data from CSV files
@@ -63,9 +98,9 @@ def save_to_csv():
         messagebox.showwarning("Input Error", "All fields must be filled out")
         return
 
-    with open('students.csv', 'a', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow([idnum, fname, lname, sex, progcode, year, collname, collcode])
+    cursor.execute("INSERT INTO students (idnum, fname, lname, sex, pcode, yrlvl, cname, ccode) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", (idnum, fname, lname, sex, progcode, year, collname, collcode))
+    connect.commit()
+
 
     student_info.insert('', 'end', values=(idnum, fname, lname, sex, progcode, year, collname, collcode))
 
@@ -106,15 +141,8 @@ def open_delete_college_window():
         if college_code in college_programs:
             del college_programs[college_code]
 
-        # Remove students associated with the college
-        with open('students.csv', 'r', newline='') as file:
-            rows = list(csv.reader(file))
-
-        with open('students.csv', 'w', newline='') as file:
-            writer = csv.writer(file)
-            for row in rows:
-                if row[7] != college_code:  # College Code is in the 8th column (index 7)
-                    writer.writerow(row)
+        cursor.execute("DELETE FROM students WHERE ccode = ?", (college_code))
+        connect.commit()
 
         # Reload the Treeview with updated student data
         student_info.delete(*student_info.get_children())
@@ -132,13 +160,10 @@ def open_delete_college_window():
     delete_button.pack(pady=20)
 
 def load_from_csv():
-    try:
-        with open('students.csv', newline='') as file:
-            reader = csv.reader(file)
-            for row in reader:
-                student_info.insert('', 'end', values=row)
-    except FileNotFoundError:
-        pass
+    cursor.execute("SELECT * FROM students")
+    students = cursor.fetchall()
+    for stud in students:
+        student_info.insert('', 'end', values=stud)
 
 
 
@@ -149,29 +174,12 @@ def delete_selected():
         messagebox.showwarning("Selection Error", "No item selected")
         return
 
-    for item in selected_item:
-        student_info.delete(item)
-
-    with open('students.csv', 'r', newline='') as file:
-        rows = list(csv.reader(file))
-
-    new_student_csv = None
-    for i in range(0, len(selected_rows)):
-        for student in rows:
-            if selected_rows[i][0] == student[0]:
-                rows.remove(student)
-                continue
-
-    with open('students.csv', 'w', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerows(rows)
+    for i in selected_rows:
+        cursor.execute("DELETE FROM students WHERE idnum = ?", (i[0]))
+        connect.commit()
 
 
-    # with open('students.csv', 'w', newline='') as file:
-    #     writer = csv.writer(file)
-    #     for row in rows:
-    #         if not any(row == student_info.item(item, 'values') for item in selected_item):
-    #             writer.writerow(row)
+
 
 def update_search_suggestions(event):
     search_term = search_var.get().lower()
@@ -353,3 +361,5 @@ student_info['show'] = 'headings'
 load_from_csv()
 
 root.mainloop()
+
+connect.close()
