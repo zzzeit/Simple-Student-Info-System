@@ -35,15 +35,7 @@ cursor.execute('''
         pcodes TEXT
     )
 ''')
-with open('college_programs.csv', mode='r', newline='', encoding='utf-8') as file:
-        reader = csv.reader(file)
-        next(reader)  # Skip the header row if it exists
-        for row in reader:
-            ccode = row[0]
-            pcodes = row[1:]
-            pcodes = ",".join(pcodes)
-            cursor.execute("INSERT INTO cprog (ccode, pcodes) VALUES (?, ?)", (ccode, pcodes))
-connect.commit()
+
 
 # Load college programs from CSV
 def load_college_programs():
