@@ -140,8 +140,11 @@ def load_from_csv():
     except FileNotFoundError:
         pass
 
+
+
 def delete_selected():
     selected_item = student_info.selection()
+    selected_rows = [student_info.item(item, 'values') for item in selected_item]
     if not selected_item:
         messagebox.showwarning("Selection Error", "No item selected")
         return
@@ -152,11 +155,23 @@ def delete_selected():
     with open('students.csv', 'r', newline='') as file:
         rows = list(csv.reader(file))
 
-    with open('students.csv', 'w', newline='') as file:
-        writer = csv.writer(file)
-        for row in rows:
-            if not any(row == student_info.item(item, 'values') for item in selected_item):
-                writer.writerow(row)
+    new_student_csv = None
+    for i in range(0, len(selected_rows)):
+        for student in rows:
+            if selected_rows[i][0] == student[0]:
+                rows.remove(student)
+                continue
+
+    with open('students.csv', 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerows(rows)
+
+
+    # with open('students.csv', 'w', newline='') as file:
+    #     writer = csv.writer(file)
+    #     for row in rows:
+    #         if not any(row == student_info.item(item, 'values') for item in selected_item):
+    #             writer.writerow(row)
 
 def update_search_suggestions(event):
     search_term = search_var.get().lower()
